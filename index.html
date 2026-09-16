@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Edukasi: Logika & Penalaran Akuntansi</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #0d9488;
+            --accent: #f59e0b;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --correct: #16a34a;
+            --wrong: #dc2626;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            overflow: hidden;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            background: #eff6ff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .nav-modules {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .btn-module {
+            background: #e2e8f0;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #475569;
+            white-space: nowrap;
+            transition: 0.3s;
+        }
+
+        .btn-module.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .module-content {
+            display: none;
+        }
+
+        .module-content.active {
+            display: block;
+        }
+
+        /* Styling Soal & Quiz */
+        .question-card {
+            background: #f1f5f9;
+            border-left: 5px solid var(--secondary);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        @media(min-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .btn-option {
+            background: white;
+            border: 2px solid #cbd5e1;
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+
+        .btn-option:hover {
+            border-color: var(--primary);
+            background: #f8fafc;
+        }
+
+        .feedback {
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .feedback.correct {
+            background: #dcfce7;
+            color: var(--correct);
+            display: block;
+        }
+
+        .feedback.wrong {
+            background: #fee2e2;
+            color: var(--wrong);
+            display: block;
+        }
+
+        /* Tabel Kebenaran & Perbandingan */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .truth-input {
+            width: 100%;
+            padding: 5px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .btn-action {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-action:hover {
+            opacity: 0.9;
+        }
+
+        .explanation {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 5px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <header>
+        <h1>Accounting Logic Quest</h1>
+        <p>Aplikasi Logika & Penalaran dalam Bidang Akuntansi</p>
+    </header>
+
+    <div class="score-board">
+        <span>Modul Terbuka: <span id="progress-text">1 / 4</span></span>
+        <span>Skor: <span id="score">0</span></span>
+    </div>
+
+    <!-- Navigasi Modul -->
+    <div class="nav-modules">
+        <button class="btn-module active" onclick="switchModule(0)">1. Proposisi</button>
+        <button class="btn-module" onclick="switchModule(1)">2. Operasi Logika</button>
+        <button class="btn-module" onclick="switchModule(2)">3. Jenis Penalaran</button>
+        <button class="btn-module" onclick="switchModule(3)">4. Inferensi (Silogisme)</button>
+    </div>
+
+    <!-- MODUL 1: PROPOSISI -->
+    <div class="module-content active" id="mod-0">
+        <h2>Modul 1: Proposisi Akuntansi</h2>
+        <p style="margin-bottom: 15px;">Proposisi adalah kalimat deklaratif yang dapat bernilai **BENAR (B)** atau **SALAH (S)**, tetapi tidak keduanya. Klasifikasikan setiap pernyataan berikut!</p>
+        
+        <div id="m1-quiz"></div>
+    </div>
+
+    <!-- MODUL 2: OPERASI LOGIKA -->
+    <div class="module-content" id="mod-1">
+        <h2>Modul 2: Tabel Kebenaran & Logika Akuntansi</h2>
+        <p>Lengkapi Tabel Kebenaran di bawah ini berdasarkan skenario Akuntansi/SOP!</p>
+
+        <!-- Skenario 1: Konjungsi -->
+        <div style="margin-top: 20px;">
+            <h3>Case A: Verifikasi & Pembayaran Faktur (Konjungsi: p ∧ q)</h3>
+            <p class="explanation">Aturan: Pembayaran Faktur diterbitkan (TRUE) JIKA Faktur Valid (p) DAN Barang Sudah Diterima (q).</p>
+            <table>
+                <tr>
+                    <th>Faktur Valid (p)</th>
+                    <th>Barang Diterima (q)</th>
+                    <th>Hasil (p ∧ q)</th>
+                </tr>
+                <tr><td>B</td><td>B</td><td><select id="m2-1" class="truth-select"><option value="">-</option><option value="B">B</option><option value="S">S</option></select></td></tr>
+                <tr><td>B</td><td>S</td><td><select id="m2-2" class="truth-select"><option value="">-</option><option value="B">B</option><option value="S">S</option></select></td></tr>
+                <tr><td>S</td><td>B</td><td><select id="m2-3" class="truth-select"><option value="">-</option><option value="B">B</option><option value="S">S</option></select></td></tr>
+                <tr><td>S</td><td>S</td><td><select id="m2-4" class="truth-select"><option value="">-</option><option value="B">B</option><option value="S">S</option></select></td></tr>
+            </table>
+        </div>
+
+        <!-- Skenario 2: Implikasi -->
+        <div style="margin-top: 20px;">
+            <h3>Case B: SOP Pengendalian Kas (Implikasi: p → q)</h3>
+            <p class="explanation">Aturan SOP: "JIKA Pengeluaran Kas > Rp 5 Juta (p), MAKA Harus Menggunakan Cek (q)."<br>
+            *Catatan: Implikasi hanya bernilai SALAH jika Syarat/Premis (p) terjadi, tetapi Kewajiban/Ketetapan (q) DILANGGAR.*</p>
+            <table>
+                <tr>
+                    <th>Pengeluaran > 5JT (p)</th>
+                    <th>Pakai Cek (q)</th>
+                    <th>SOP Dipatuhi? (p → q)</th>
+                </tr>
+                <tr><td>B (Kas > 5JT)</td><td>B (Pakai Cek)</td><td><select id="m2-5" class="truth-select"><option value="">-</option><option value="B">B</option><option value="S">S</option></select></td></tr>
+                <tr><td>B (Kas > 5JT)</td><td>S (Pakai Tunai)</td><td><select id="m2-6" class="truth-select"><option value="">-</option><option value="B">B</option><option value="S">S</option></select></td></tr>
+                <tr><td>S (Kas ≤ 5JT)</td><td>B (Pakai Cek)</td><td><select id="m2-7" class="truth-select"><option value="">-</option><option value="B">B</option><option value="S">S</option></select></td></tr>
+                <tr><td>S (Kas ≤ 5JT)</td><td>S (Pakai Tunai)</td><td><select id="m2-8" class="truth-select"><option value="">-</option><option value="B">B</option><option value="S">S</option></select></td></tr>
+            </table>
+        </div>
+        <button class="btn-action" onclick="checkMod2()">Cek Jawaban Modul 2</button>
+        <div id="m2-feedback" class="feedback"></div>
+    </div>
+
+    <!-- MODUL 3: PENALARAN -->
+    <div class="module-content" id="mod-2">
+        <h2>Modul 3: Deduktif, Induktif, dan Abduktif</h2>
+        <p>Pahami tabel perbandingan berikut, lalu selesaikan kasus penalaran di bawahnya!</p>
+        
+        <table>
+            <tr>
+                <th>Penalaran</th>
+                <th>Arah Logika</th>
+                <th>Contoh Kasus Akuntansi</th>
+            </tr>
+            <tr>
+                <td><b>Deduktif</b></td>
+                <td>Umum (Prinsip/PSAK) → Khusus (Kasus)</td>
+                <td>Menerapkan standar PSAK 73 Sewa pada kontrak sewa PT ABC.</td>
+            </tr>
+            <tr>
+                <td><b>Induktif</b></td>
+                <td>Khusus (Pola/Data) → Umum (Kesimpulan Trend)</td>
+                <td>Melihat penjualan naik tiap Desember selama 5 tahun, disimpulkan ada tren musiman.</td>
+            </tr>
+            <tr>
+                <td><b>Abduktif</b></td>
+                <td>Gejala/Hasil → Penjelasan Terbaik (Investigasi)</td>
+                <td>Auditor menemukan selisih kas Rp 10jt, hipotesis terbaik: ada pencatatan ganda atau *lapping*.</td>
+            </tr>
+        </table>
+
+        <div id="m3-quiz" style="margin-top: 20px;"></div>
+    </div>
+
+    <!-- MODUL 4: INFERENSI SILOGISME -->
+    <div class="module-content" id="mod-3">
+        <h2>Modul 4: Inferensi Logika Transaksi</h2>
+        <p>Pilih kesimpulan yang sah (*valid*) berdasarkan bukti transaksi dan aturan akuntansi yang diberikan!</p>
+        
+        <div id="m4-quiz"></div>
+    </div>
+</div>
+
+<script>
+    // System State
+    let score = 0;
+    let completedModules = [false, false, false, false];
+
+    // DATA QUIZ MODUL 1
+    const m1Data = [
+        {
+            text: "Saldo Kas di Bank Mandiri per 31 Desember bernilai Rp 50.000.000.",
+            type: "Proposisi (Dapat dinilai Benar/Salah)",
+            correct1: true,
+            correct: false,
+            exp: "Ini adalah proposisi karena memuat klaim faktual yang bisa diverifikasi nilainya."
+        },
+        {
+            text: "Tolong susun Laporan Laba Rugi perusahaan ini sekarang juga!",
+            type: "Bukan Proposisi (Kalimat Perintah)",
+            correct1: false,
+            correct: true,
+            exp: "Kalimat perintah (imperatif) tidak memiliki nilai kebenaran (Benar/Salah)."
+        },
+        {
+            text: "Jumlah Total Aktiva pada Neraca Saldo harus selalu sama dengan Total Pasiva.",
+            type: "Proposisi (Dapat dinilai Benar/Salah)",
+            correct1: true,
+            correct: false,
+            exp: "Ini proposisi yang bernilai BENAR berdasarkan prinsip dasar *double-entry*."
+        },
+        {
+            text: "Menurut saya, kinerja keuangan PT Maju Sejahtera sangat bagus tahun ini.",
+            type: "Bukan Proposisi / Opini Subjektif",
+            correct1: false,
+            correct: true,
+            exp: "Opini tanpa kriteria terukur bersifat subjektif dan bukan proposisi logika formal."
+        }
+    ];
+
+    // DATA QUIZ MODUL 3
+    const m3Data = [
+        {
+            scenario: "Semua aset tetap harus disusutkan (Premis Umum). Gedung kantor adalah aset tetap (Premis Khusus). Maka, gedung kantor harus disusutkan.",
+            ans: "Deduktif",
+            options: ["Deduktif", "Induktif", "Abduktif"]
+        },
+        {
+            scenario: "Auditor menemukan bahwa kasir kas kecil selalu terlambat menyerahkan bukti transaksi setiap hari Jumat. Auditor menyimpulkan kasir memiliki beban kerja berlebih di akhir pekan.",
+            ans: "Induktif",
+            options: ["Deduktif", "Induktif", "Abduktif"]
+        },
+        {
+            scenario: "Dalam pemeriksaan fisik, persediaan barang di gudang kurang 50 unit dari catatan buku besar. Penyebab yang paling mungkin adalah barang rusak tidak tercatat.",
+            ans: "Abduktif",
+            options: ["Deduktif", "Induktif", "Abduktif"]
+        }
+    ];
+
+    // DATA QUIZ MODUL 4
+    const m4Data = [
+        {
+            p1: "Premis 1: Jika Bukti Kas Keluar diotorisasi oleh Manajer Keuangan, maka Pembelian Perlengkapan dicatat di Jurnal Pengeluaran Kas.",
+            p2: "Premis 2: Bukti Kas Keluar telah diotorisasi oleh Manajer Keuangan.",
+            q: "Kesimpulan yang VALID adalah:",
+            options: [
+                "Pembelian Perlengkapan dicatat di Jurnal Pengeluaran Kas (Modus Ponens).",
+                "Pembelian Perlengkapan tidak dicatat.",
+                "Manajer Keuangan tidak mengotorisasi bukti kas.",
+                "Kas perusahaan bertambah."
+            ],
+            ans: 0
+        },
+        {
+            p1: "Premis 1: Semua transaksi penjualan kredit harus didukung oleh Faktur Penjualan.",
+            p2: "Premis 2: Transaksi A tidak didukung oleh Faktur Penjualan.",
+            q: "Kesimpulan yang VALID adalah:",
+            options: [
+                "Transaksi A adalah transaksi penjualan tunai.",
+                "Transaksi A BUKAN merupakan transaksi penjualan kredit yang sah (Modus Tollens).",
+                "Transaksi A harus langsung dibayar kas.",
+                "Faktur Penjualan dicetak ulang."
+            ],
+            ans: 1
+        }
+    ];
+
+    // Render Function
+    function initGame() {
+        // Render Modul 1
+        const m1Container = document.getElementById('m1-quiz');
+        m1Data.forEach((item, index) => {
+            m1Container.innerHTML += `
+                <div class="question-card">
+                    <p><b>Pernyataan ${index+1}:</b> "${item.text}"</p>
+                    <div class="options-grid" style="margin-top:10px;">
+                        <button class="btn-option" onclick="checkM1(${index}, ${item.correct1}, this)">Proposisi</button>
+                        <button class="btn-option" onclick="checkM1(${index}, ${item.correct}, this)">Bukan Proposisi</button>
+                    </div>
+                    <div id="m1-fb-${index}" class="feedback"></div>
+                </div>
+            `;
+        });
+
+        // Render Modul 3
+        const m3Container = document.getElementById('m3-quiz');
+        m3Data.forEach((item, index) => {
+            let optsHtml = item.options.map(opt => `<button class="btn-option" onclick="checkM3(${index}, '${opt}', this)">${opt}</button>`).join('');
+            m3Container.innerHTML += `
+                <div class="question-card">
+                    <p><b>Kasus ${index+1}:</b> ${item.scenario}</p>
+                    <div class="options-grid" style="margin-top:10px;">${optsHtml}</div>
+                    <div id="m3-fb-${index}" class="feedback"></div>
+                </div>
+            `;
+        });
+
+        // Render Modul 4
+        const m4Container = document.getElementById('m4-quiz');
+        m4Data.forEach((item, index) => {
+            let optsHtml = item.options.map((opt, optIdx) => `<button class="btn-option" onclick="checkM4(${index}, ${optIdx}, this)">${opt}</button>`).join('');
+            m4Container.innerHTML += `
+                <div class="question-card">
+                    <p><b>${item.p1}</b></p>
+                    <p><b>${item.p2}</b></p>
+                    <p style="margin-top:5px; color:var(--primary); font-weight:bold;">${item.q}</p>
+                    <div class="options-grid" style="margin-top:10px;">${optsHtml}</div>
+                    <div id="m4-fb-${index}" class="feedback"></div>
+                </div>
+            `;
+        });
+    }
+
+    // Module Switcher
+    function switchModule(index) {
+        document.querySelectorAll('.module-content').forEach((el, i) => {
+            el.classList.toggle('active', i === index);
+        });
+        document.querySelectorAll('.btn-module').forEach((el, i) => {
+            el.classList.toggle('active', i === index);
+        });
+    }
+
+    // Logic Checkers
+    function addScore(pts) {
+        score += pts;
+        document.getElementById('score').innerText = score;
+    }
+
+    function checkM1(index, isPropChoice, btn) {
+        const item = m1Data[index];
+        const isCorrect = (isPropChoice && item.type.includes("Proposisi")) || (!isPropChoice && !item.type.includes("Proposisi"));
+        const fb = document.getElementById(`m1-fb-${index}`);
+        
+        const parent = btn.parentElement;
+        parent.querySelectorAll('button').forEach(b => b.disabled = true);
+
+        if (isCorrect) {
+            fb.className = "feedback correct";
+            fb.innerHTML = `Tepat! ${item.exp}`;
+            addScore(10);
+        } else {
+            fb.className = "feedback wrong";
+            fb.innerHTML = `Kurang Tepat. ${item.exp}`;
+        }
+    }
+
+    function checkMod2() {
+        // Correct Key: B, S, S, S (Konjungsi) & B, S, B, B (Implikasi)
+        const answers = {
+            "m2-1": "B", "m2-2": "S", "m2-3": "S", "m2-4": "S",
+            "m2-5": "B", "m2-6": "S", "m2-7": "B", "m2-8": "B"
+        };
+        
+        let allCorrect = true;
+        for (let id in answers) {
+            const val = document.getElementById(id).value;
+            if (val !== answers[id]) {
+                allCorrect = false;
+                break;
+            }
+        }
+
+        const fb = document.getElementById('m2-feedback');
+        if (allCorrect) {
+            fb.className = "feedback correct";
+            fb.innerHTML = "Luar biasa! Seluruh tabel kebenaran Konjungsi & SOP Implikasi berhasil terisi dengan BENAR! (+40 Skor)";
+            addScore(40);
+        } else {
+            fb.className = "feedback wrong";
+            fb.innerHTML = "Masih ada isian yang keliru. Ingat: Konjungsi hanya BENAR jika B&B. Implikasi hanya SALAH jika Syarat terjadi tetapi Pelaksanaan dilanggar (B → S).";
+        }
+    }
+
+    function checkM3(index, choice, btn) {
+        const item = m3Data[index];
+        const fb = document.getElementById(`m3-fb-${index}`);
+        btn.parentElement.querySelectorAll('button').forEach(b => b.disabled = true);
+
+        if (choice === item.ans) {
+            fb.className = "feedback correct";
+            fb.innerHTML = `Benar! Ini adalah jenis penalaran <b>${item.ans}</b>.`;
+            addScore(15);
+        } else {
+            fb.className = "feedback wrong";
+            fb.innerHTML = `Salah. Jawaban yang benar adalah <b>${item.ans}</b>.`;
+        }
+    }
+
+    function checkM4(index, choiceIdx, btn) {
+        const item = m4Data[index];
+        const fb = document.getElementById(`m4-fb-${index}`);
+        btn.parentElement.querySelectorAll('button').forEach(b => b.disabled = true);
+
+        if (choiceIdx === item.ans) {
+            fb.className = "feedback correct";
+            fb.innerHTML = "Tepat sekali! Kesimpulan ini ditarik secara sah (valid) menurut kaidah inferensi logika.";
+            addScore(20);
+        } else {
+            fb.className = "feedback wrong";
+            fb.innerHTML = "Kurang tepat. Perhatikan keterkaitan antara Premis Mayor dan Premis Minor.";
+        }
+    }
+
+    window.onload = initGame;
+</script>
+</body>
+</html>
